@@ -1,0 +1,66 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --gov-primary: #004D3A;
+    --gov-green: #006A4E;
+    --gov-red: #C8102E;
+    --gov-gold: #C5A059;
+    --surface-bg: #F8FAF9;
+    --surface-card: #FFFFFF;
+    --border-color: #E2E8F0;
+    --text-main: #0F172A;
+    --text-muted: #64748B;
+  }
+
+  .dark {
+    --gov-primary: #002B21;
+    --gov-green: #10B981;
+    --gov-red: #EF4444;
+    --gov-gold: #EAB308;
+    --surface-bg: #0B131E;
+    --surface-card: #15202E;
+    --border-color: #1E293B;
+    --text-main: #F8FAFC;
+    --text-muted: #94A3B8;
+  }
+
+  html {
+    font-family: 'Noto Sans Bengali', 'Inter', system-ui, -apple-system, sans-serif;
+  }
+}
+
+/* Custom Scrollbar for Dense Tables */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.4);
+  border-radius: 3px;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: rgba(100, 116, 133, 0.4);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(100, 116, 139, 0.7);
+}
+
+/* Institutional Badge Utilities */
+.badge-gov {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: 0.125rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-width: 1px;
+}

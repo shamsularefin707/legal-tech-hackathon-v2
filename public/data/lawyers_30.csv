@@ -1,0 +1,31 @@
+lawyerId,lawyerName,barCouncilId,gender,district,specialization,phone,email,activeCases,capacity,availability,yearsExperience,status
+LADCS-001,Md. Abdur Rauf,BC-2020-2483,Female,Netrokona,Criminal Legal Aid,+8801611761556,lawyer01@demo-legal-aid.org,18,22,On Leave,2,ACTIVE
+LADCS-002,Mst. Rokeya Sultana,BC-2021-8728,Male,Khulna,Land Disputes,+8801448423524,lawyer02@demo-legal-aid.org,21,23,On Leave,15,ACTIVE
+LADCS-003,Kazi Tanvir Ahmed,BC-2022-1255,Male,Khulna,Land Disputes,+8801577678780,lawyer03@demo-legal-aid.org,12,21,Limited,19,SUSPENDED
+LADCS-004,Farida Yasmin,BC-2023-4249,Female,Rajbari,Civil Litigation,+8801371040489,lawyer04@demo-legal-aid.org,21,22,On Leave,21,SUSPENDED
+LADCS-005,Rehana Parvin,BC-2024-1149,Female,Netrokona,Criminal Legal Aid,+8801914902278,lawyer05@demo-legal-aid.org,19,20,Available,18,SUSPENDED
+LADCS-006,Mahbubur Rahman,BC-2025-2867,Male,Chattogram,General Legal Aid,+8801323193553,lawyer06@demo-legal-aid.org,22,21,Limited,11,ACTIVE
+LADCS-007,Sadia Islam,BC-2026-6583,Female,Cumilla,Civil Litigation,+8801578555383,lawyer07@demo-legal-aid.org,13,26,Available,11,ACTIVE
+LADCS-008,Jahid Khan,BC-2027-8807,Female,Dhaka,Women & Children,+8801437833639,lawyer08@demo-legal-aid.org,20,20,On Leave,2,SUSPENDED
+LADCS-009,Nusrat Akter,BC-2028-9114,Female,Chattogram,Family Law,+8801862149427,lawyer09@demo-legal-aid.org,23,24,Limited,21,ACTIVE
+LADCS-010,Aminul Hossain,BC-2029-1828,Male,Khulna,Land Disputes,+8801525646088,lawyer10@demo-legal-aid.org,11,28,Available,9,ACTIVE
+LADCS-011,Shahidul Chowdhury,BC-2030-2719,Female,Chattogram,Land Disputes,+8801774449515,lawyer11@demo-legal-aid.org,16,29,Available,17,ACTIVE
+LADCS-012,Mariam Begum,BC-2031-4230,Male,Khulna,Women & Children,+8801951672394,lawyer12@demo-legal-aid.org,17,25,On Leave,4,ACTIVE
+LADCS-013,Rashed Karim,BC-2032-7008,Male,Khulna,ADR/Mediation,+8801727452448,lawyer13@demo-legal-aid.org,16,29,Available,4,ACTIVE
+LADCS-014,Shamima Miah,BC-2033-2937,Male,Joypurhat,ADR/Mediation,+8801979872499,lawyer14@demo-legal-aid.org,11,24,On Leave,21,ACTIVE
+LADCS-015,Imran Das,BC-2034-5974,Male,Dhaka,Family Law,+8801471255591,lawyer15@demo-legal-aid.org,20,21,Limited,14,ACTIVE
+LADCS-016,Md. Abdur Rauf,BC-2035-6659,Female,Habiganj,Land Disputes,+8801575924678,lawyer16@demo-legal-aid.org,15,21,Available,8,ACTIVE
+LADCS-017,Mst. Rokeya Sultana,BC-2036-3945,Male,Rajbari,Family Law,+8801690988177,lawyer17@demo-legal-aid.org,20,22,Limited,14,ACTIVE
+LADCS-018,Kazi Tanvir Ahmed,BC-2037-8688,Female,Rajbari,Maintenance,+8801976155489,lawyer18@demo-legal-aid.org,19,23,Available,10,SUSPENDED
+LADCS-019,Farida Yasmin,BC-2038-1009,Female,Rajbari,General Legal Aid,+8801644434165,lawyer19@demo-legal-aid.org,17,21,Available,2,ACTIVE
+LADCS-020,Rehana Parvin,BC-2039-7149,Male,Netrokona,Land Disputes,+8801711177779,lawyer20@demo-legal-aid.org,12,19,Limited,10,SUSPENDED
+LADCS-021,Mahbubur Rahman,BC-2040-9200,Female,Chattogram,General Legal Aid,+8801513584624,lawyer21@demo-legal-aid.org,16,20,Limited,14,ACTIVE
+LADCS-022,Sadia Islam,BC-2041-4363,Female,Habiganj,Maintenance,+8801954368677,lawyer22@demo-legal-aid.org,15,28,On Leave,11,ACTIVE
+LADCS-023,Jahid Khan,BC-2042-8761,Male,Dhaka,ADR/Mediation,+8801718891558,lawyer23@demo-legal-aid.org,14,22,Available,11,ACTIVE
+LADCS-024,Nusrat Akter,BC-2043-2859,Male,Habiganj,Land Disputes,+8801648675873,lawyer24@demo-legal-aid.org,19,22,Limited,8,ACTIVE
+LADCS-025,Aminul Hossain,BC-2044-9597,Male,Cumilla,General Legal Aid,+8801364282082,lawyer25@demo-legal-aid.org,10,21,Available,22,ACTIVE
+LADCS-026,Shahidul Chowdhury,BC-2045-7645,Male,Rajbari,Criminal Legal Aid,+8801699092897,lawyer26@demo-legal-aid.org,15,28,Limited,18,ACTIVE
+LADCS-027,Mariam Begum,BC-2046-3252,Female,Netrokona,Criminal Legal Aid,+8801514900147,lawyer27@demo-legal-aid.org,14,23,On Leave,4,ACTIVE
+LADCS-028,Rashed Karim,BC-2047-6922,Female,Netrokona,Criminal Legal Aid,+8801739495880,lawyer28@demo-legal-aid.org,22,20,On Leave,18,ACTIVE
+LADCS-029,Shamima Miah,BC-2048-7534,Male,Rajbari,General Legal Aid,+8801595058834,lawyer29@demo-legal-aid.org,18,24,Available,13,ACTIVE
+LADCS-030,Imran Das,BC-2049-8446,Male,Khulna,Criminal Legal Aid,+8801533814957,lawyer30@demo-legal-aid.org,14,27,Available,19,ACTIVE
