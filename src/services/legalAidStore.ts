@@ -598,6 +598,179 @@ class LegalAidStore {
     this.notify();
   }
 
+  // 10. Panel Lawyer declines assignment with valid reason
+  public lawyerDeclineAssignment(caseId: string, reason: string): void {
+    const c = this.cases.find(item => item.caseId === caseId);
+    if (!c) return;
+
+    const lawyerName = c.assignedLawyer || 'আইনজীবী';
+    const lawyer = this.lawyers.find(l => l.lawyerId === c.assignedLawyerId);
+    if (lawyer && lawyer.activeCases > 0) {
+      lawyer.activeCases--;
+      lawyer.utilization = Math.round((lawyer.activeCases / lawyer.capacity) * 100);
+      if (lawyer.utilization >= 100) lawyer.workloadStatus = 'OVERLOADED';
+      else if (lawyer.utilization >= 80) lawyer.workloadStatus = 'NEAR_CAPACITY';
+      else lawyer.workloadStatus = 'AVAILABLE';
+    }
+
+    c.assignedLawyerId = null;
+    c.assignedLawyer = null;
+    c.representationStatus = 'REASSIGNMENT_REQUESTED';
+    c.currentStageBn = 'আইনজীবী অপারগতা প্রকাশ করেছেন (পুনঃনিয়োগ অপেক্ষমাণ)';
+
+    auditLogger.recordEvent({
+      userRole: this.currentUser.role,
+      userName: this.currentUser.name,
+      actionBn: 'আইনজীবী কর্তৃক দায়িত্ব গ্রহণে অপারগতা প্রকাশ',
+      actionCode: 'DECLINE_ASSIGNMENT',
+      recordId: c.caseId,
+      targetEntity: 'CASE',
+      previousState: lawyerName,
+      newState: 'UNASSIGNED',
+      detailsBn: `অপারগতার কারণ: "${reason || 'পেশাগত স্বার্থের দ্বন্দ্ব / অতিরিক্ত কার্যভার'}" • DLAO কর্তৃক পুনঃনিয়োগের সুপারিশ প্রযোজ্য।`
+    });
+
+    this.notify();
+  }
+
+  // 11. Add Case Progress Note
+  public addCaseProgressNote(caseId: string, content: string): void {
+    const c = this.cases.find(item => item.caseId === caseId);
+    if (!c) return;
+
+    if (!c.caseNotes) {
+      c.caseNotes = [];
+    }
+
+    c.caseNotes.unshift({
+      id: `NOTE-${Date.now()}`,
+      authorName: this.currentUser.name,
+      authorRole: this.currentUser.role,
+      date: SYSTEM_DEMO_DATE_STR,
+      content
+    });
+
+    c.lastActivityDate = SYSTEM_DEMO_DATE_STR;
+
+    auditLogger.recordEvent({
+      userRole: this.currentUser.role,
+      userName: this.currentUser.name,
+      actionBn: 'মামলার অগ্রগতি নোট সংযোজন',
+      actionCode: 'ADD_CASE_NOTE',
+      recordId: c.caseId,
+      targetEntity: 'CASE',
+      detailsBn: `নোট: ${content.length > 80 ? content.substring(0, 80) + '...' : content}`
+    });
+
+    this.notify();
+  }
+
+  // Role-Specific Fast Queues (Clean Workflow Architecture)
+  public getApplicantCases(searchQuery?: string): CanonicalCase[] {
+    const q = (searchQuery || '').trim().toLowerCase();
+    if (!q) {
+      // Default to demo citizen's cases (e.g. Nasrin Parvin or recently submitted applications)
+      return this.cases.filter(
+        c => c.applicantName.toLowerCase().includes('nasrin') || c.caseId.includes('0001') || c.importBatchId === 'DIRECT-PORTAL-INTAKE'
+      );
+    }
+    return this.cases.filter(
+      c =>
+        c.caseId.toLowerCase().includes(q) ||
+        c.applicantName.toLowerCase().includes(q) ||
+        (c.applicationId && c.applicationId.toLowerCase().includes(q))
+    );
+  }
+
+  public getOfficerTodayActionQueue(district?: string): {
+    newApplications: CanonicalCase[];
+    awaitingEligibility: CanonicalCase[];
+    awaitingLawyer: CanonicalCase[];
+    upcomingHearings7Days: CanonicalCase[];
+    overdueSlaCases: CanonicalCase[];
+    dataAnomalies: CanonicalCase[];
+  } {
+    const pool = district ? this.cases.filter(c => c.district.toLowerCase() === district.toLowerCase()) : this.cases;
+
+    const newApplications = pool.filter(c => c.applicationStatus === 'SUBMITTED');
+    const awaitingEligibility = pool.filter(c => c.applicationStatus === 'UNDER_REVIEW' || c.applicationStatus === 'VERIFIED');
+    const awaitingLawyer = pool.filter(c => c.applicationStatus === 'APPROVED' && (!c.assignedLawyerId || c.representationStatus === 'UNASSIGNED' || c.representationStatus === 'REASSIGNMENT_REQUESTED'));
+
+    const upcomingHearings7Days = pool.filter(c => {
+      if (!c.nextHearingDate || c.lifecycleStatus === 'CLOSED' || c.lifecycleStatus === 'RESOLVED') return false;
+      const d = parseDateSafe(c.nextHearingDate);
+      if (!d) return false;
+      const diffDays = (d.getTime() - SYSTEM_DEMO_DATE.getTime()) / (1000 * 3600 * 24);
+      return diffDays >= 0 && diffDays <= 7;
+    });
+
+    const overdueSlaCases = pool.filter(c => c.slaStatus === 'EXPIRED');
+    const dataAnomalies = pool.filter(c => c.dataQualityStatus === 'DATA_QUALITY_ANOMALY');
+
+    return {
+      newApplications,
+      awaitingEligibility,
+      awaitingLawyer,
+      upcomingHearings7Days,
+      overdueSlaCases,
+      dataAnomalies
+    };
+  }
+
+  public getLawyerCaseload(lawyerId: string): {
+    pendingAssignments: CanonicalCase[];
+    activeCases: CanonicalCase[];
+    upcomingHearings: CanonicalCase[];
+    needsProgressUpdate: CanonicalCase[];
+  } {
+    // If lawyerId is provided, match that lawyer, or fallback to first active panel lawyer
+    const targetLawyer = this.lawyers.find(l => l.lawyerId === lawyerId) || this.lawyers[0];
+    const targetId = targetLawyer.lawyerId;
+    const targetName = targetLawyer.lawyerName;
+
+    const assigned = this.cases.filter(
+      c => c.assignedLawyerId === targetId || (c.assignedLawyer && c.assignedLawyer.toLowerCase() === targetName.toLowerCase())
+    );
+
+    const pendingAssignments = assigned.filter(c => c.representationStatus === 'ASSIGNED');
+    const activeCases = assigned.filter(c => c.representationStatus === 'ACCEPTED_BY_LAWYER');
+
+    const upcomingHearings = activeCases.filter(c => {
+      if (!c.nextHearingDate) return false;
+      const d = parseDateSafe(c.nextHearingDate);
+      return d !== null && d >= SYSTEM_DEMO_DATE;
+    });
+
+    const needsProgressUpdate = activeCases.filter(c => {
+      if (!c.lastActivityDate) return true;
+      const d = parseDateSafe(c.lastActivityDate);
+      if (!d) return true;
+      const daysSince = (SYSTEM_DEMO_DATE.getTime() - d.getTime()) / (1000 * 3600 * 24);
+      return daysSince > 20;
+    });
+
+    return {
+      pendingAssignments,
+      activeCases,
+      upcomingHearings,
+      needsProgressUpdate
+    };
+  }
+
+  public getSupervisorWorkload(): {
+    overdueCases: CanonicalCase[];
+    chronologyConflicts: CanonicalCase[];
+    unassignedApproved: CanonicalCase[];
+    highPriorityActive: CanonicalCase[];
+  } {
+    return {
+      overdueCases: this.cases.filter(c => c.slaStatus === 'EXPIRED'),
+      chronologyConflicts: this.cases.filter(c => c.dataQualityStatus === 'DATA_QUALITY_ANOMALY'),
+      unassignedApproved: this.cases.filter(c => c.applicationStatus === 'APPROVED' && !c.assignedLawyerId),
+      highPriorityActive: this.cases.filter(c => (c.priority === 'CRITICAL' || c.priority === 'HIGH') && c.lifecycleStatus !== 'CLOSED' && c.lifecycleStatus !== 'RESOLVED')
+    };
+  }
+
   // Aggregations & Metrics (Strict 100% Reconciliation)
   public getQualityReport(): DatasetQualityReport {
     return auditDatasetQuality(this.cases, this.lawyers);

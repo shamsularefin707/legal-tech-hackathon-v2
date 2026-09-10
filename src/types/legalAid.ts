@@ -228,11 +228,23 @@ export interface CanonicalCase {
   chronologyReviewStatus?: 'UNREVIEWED' | 'REVIEWED' | 'CORRECTION_NEEDED' | 'VERIFIED_WITH_SOURCE';
   anomalies: AnomalyItem[];
 
+  // Case Notes & Progress
+  caseNotes?: CaseNote[];
+
   // Source Lineage
   sourceRecordId: string;
   importBatchId: string;
   intentionalDemoAnomaly: string;
   notes: string;
+}
+
+export interface CaseNote {
+  id: string;
+  authorName: string;
+  authorRole: UserRole;
+  date: string;
+  content: string;
+  isPrivate?: boolean;
 }
 
 // 8. Audit Trail

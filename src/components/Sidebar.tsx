@@ -11,16 +11,22 @@ import {
   History,
   Lock,
   PlusCircle,
-  X
+  X,
+  UserCheck,
+  BookOpen,
+  Calendar,
+  CheckCircle2
 } from 'lucide-react';
 import { UserRole } from '../types/legalAid';
-import { ROLE_CONFIGS, hasPermission } from '../services/rbacService';
+import { ROLE_CONFIGS } from '../services/rbacService';
 
 export type NavTabId =
-  | 'dashboard'
+  | 'applicant_portal'
+  | 'officer_workspace'
+  | 'lawyer_workspace'
+  | 'supervisor_workspace'
   | 'applications'
   | 'cases'
-  | 'attention'
   | 'lawyers'
   | 'districts'
   | 'sla'
@@ -57,177 +63,240 @@ export const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   const roleConfig = ROLE_CONFIGS[currentRole];
 
-  const navItems: {
-    id: NavTabId;
-    labelBn: string;
-    icon: React.ElementType;
-    badge?: number | string;
-    badgeColor?: string;
-    showForRoles?: UserRole[];
-  }[] = [
-    {
-      id: 'dashboard',
-      labelBn: 'ড্যাশবোর্ড',
-      icon: LayoutDashboard
-    },
-    {
-      id: 'applications',
-      labelBn: 'আইনগত সহায়তা আবেদন',
-      icon: FileCheck,
-      badge: pendingApplicationsCount > 0 ? pendingApplicationsCount : undefined,
-      badgeColor: 'bg-blue-100 text-blue-800 dark:bg-blue-900/60 dark:text-blue-200'
-    },
-    {
-      id: 'cases',
-      labelBn: 'আদালতের মামলাসমূহ',
-      icon: Briefcase,
-      badge: activeCasesCount > 0 ? activeCasesCount : undefined,
-      badgeColor: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-200'
-    },
-    {
-      id: 'attention',
-      labelBn: 'আজকের জরুরি কিউ',
-      icon: AlertCircle,
-      badge: attentionItemsCount > 0 ? attentionItemsCount : undefined,
-      badgeColor: 'bg-amber-100 text-amber-800 dark:bg-amber-900/60 dark:text-amber-200'
-    },
-    {
-      id: 'lawyers',
-      labelBn: 'প্যানেল আইনজীবী ও কর্মভার',
-      icon: Users
-    },
-    {
-      id: 'districts',
-      labelBn: 'জেলা পর্যবেক্ষণ (৮ পাইলট)',
-      icon: Building2,
-      badge: '৮ জেলা',
-      badgeColor: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
-    },
-    {
-      id: 'sla',
-      labelBn: 'সেবা সময়সীমা (SLA)',
-      icon: Clock,
-      badge: slaBreachesCount > 0 ? slaBreachesCount : undefined,
-      badgeColor: 'bg-red-100 text-red-800 dark:bg-red-900/60 dark:text-red-200'
-    },
-    {
-      id: 'data_quality',
-      labelBn: 'ডেটা মান ও নিরীক্ষা',
-      icon: ShieldAlert,
-      badge: dataAnomaliesCount > 0 ? dataAnomaliesCount : undefined,
-      badgeColor: 'bg-[#C8102E]/10 text-[#C8102E] dark:bg-red-900/40 dark:text-red-300 border border-red-300 dark:border-red-800'
-    },
-    {
-      id: 'audit',
-      labelBn: 'কার্যক্রমের রেকর্ড (Audit)',
-      icon: History
-    },
-    {
-      id: 'security',
-      labelBn: 'নিরাপত্তা ও প্রশাসন',
-      icon: Lock
+  // Define Navigation Items strictly tailored by role (Rule 20)
+  const getNavItemsForRole = () => {
+    if (currentRole === 'CITIZEN') {
+      return [
+        {
+          id: 'applicant_portal' as NavTabId,
+          labelBn: 'আমার আবেদন ও মামলা',
+          icon: FileCheck
+        },
+        {
+          id: 'cases' as NavTabId,
+          labelBn: 'মামলা ট্র্যাকিং অনুসন্ধান',
+          icon: LayoutDashboard
+        }
+      ];
     }
-  ];
 
-  const handleNavClick = (tabId: NavTabId) => {
-    onSelectTab(tabId);
-    onCloseMobile();
+    if (currentRole === 'LEGAL_AID_OFFICER') {
+      return [
+        {
+          id: 'officer_workspace' as NavTabId,
+          labelBn: 'আজকের করণীয় ডেস্ক',
+          icon: LayoutDashboard,
+          badge: pendingApplicationsCount > 0 ? pendingApplicationsCount : undefined,
+          badgeColor: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
+        },
+        {
+          id: 'applications' as NavTabId,
+          labelBn: 'আবেদন যাচাই ও অনুমোদন',
+          icon: FileCheck,
+          badge: pendingApplicationsCount > 0 ? pendingApplicationsCount : undefined,
+          badgeColor: 'bg-blue-100 text-blue-800 dark:bg-blue-900/60 dark:text-blue-200'
+        },
+        {
+          id: 'cases' as NavTabId,
+          labelBn: 'সকল নথিভুক্ত মামলা',
+          icon: Briefcase
+        },
+        {
+          id: 'lawyers' as NavTabId,
+          labelBn: 'প্যানেল আইনজীবী রোস্টার',
+          icon: Users
+        },
+        {
+          id: 'data_quality' as NavTabId,
+          labelBn: 'ডেটা মান নিরীক্ষা',
+          icon: ShieldAlert,
+          badge: dataAnomaliesCount > 0 ? dataAnomaliesCount : undefined,
+          badgeColor: 'bg-rose-100 text-rose-800 dark:bg-rose-900/60 dark:text-rose-200'
+        }
+      ];
+    }
+
+    if (currentRole === 'PANEL_LAWYER') {
+      return [
+        {
+          id: 'lawyer_workspace' as NavTabId,
+          labelBn: 'আইনজীবী চেম্বার ও রোস্টার',
+          icon: Briefcase
+        },
+        {
+          id: 'cases' as NavTabId,
+          labelBn: 'মামলার নথিপত্র অনুসন্ধান',
+          icon: FileCheck
+        },
+        {
+          id: 'audit' as NavTabId,
+          labelBn: 'কার্যক্রম অডিট ট্রেইল',
+          icon: History
+        }
+      ];
+    }
+
+    // Default for DISTRICT_ADMIN, SYSTEM_ADMIN, AUTHORIZED_AUTHORITY
+    return [
+      {
+        id: 'supervisor_workspace' as NavTabId,
+        labelBn: 'বিচারিক তদারকি ডেস্ক',
+        icon: LayoutDashboard
+      },
+      {
+        id: 'data_quality' as NavTabId,
+        labelBn: 'ডেটা মান ও অসংগতি নিরীক্ষা',
+        icon: ShieldAlert,
+        badge: dataAnomaliesCount > 0 ? dataAnomaliesCount : undefined,
+        badgeColor: 'bg-rose-100 text-rose-800 dark:bg-rose-900/60 dark:text-rose-200'
+      },
+      {
+        id: 'districts' as NavTabId,
+        labelBn: '৮টি পাইলট জেলা ব্যালেন্স',
+        icon: Building2
+      },
+      {
+        id: 'sla' as NavTabId,
+        labelBn: 'সময়সীমা ও বিলম্ব তদারকি',
+        icon: Clock,
+        badge: slaBreachesCount > 0 ? slaBreachesCount : undefined,
+        badgeColor: 'bg-amber-100 text-amber-800 dark:bg-amber-900/60 dark:text-amber-200'
+      },
+      {
+        id: 'cases' as NavTabId,
+        labelBn: 'সার্বিক মামলা খতিয়ান',
+        icon: Briefcase
+      },
+      {
+        id: 'lawyers' as NavTabId,
+        labelBn: 'প্যানেল আইনজীবী কর্মভার',
+        icon: Users
+      },
+      {
+        id: 'audit' as NavTabId,
+        labelBn: 'অপরিবর্তনযোগ্য অডিট লগ',
+        icon: History
+      },
+      {
+        id: 'security' as NavTabId,
+        labelBn: 'ভূমিকা ও প্রবেশাধিকার',
+        icon: Lock
+      }
+    ];
   };
 
-  const sidebarContent = (
-    <div className="flex flex-col h-full bg-white dark:bg-[#15202E] border-r border-slate-200 dark:border-slate-800 w-64 select-none">
-      {/* Action Button: New Application Intake */}
-      <div className="p-3 border-b border-slate-200 dark:border-slate-800">
-        <button
-          onClick={onOpenNewApplicationModal}
-          className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-md bg-[#006A4E] hover:bg-[#004D3A] text-white text-xs font-bold transition-all shadow-xs cursor-pointer"
-          title="নতুন আবেদন দাখিল করুন"
-        >
-          <PlusCircle className="w-4 h-4" />
-          <span>নতুন আবেদন দাখিল</span>
-        </button>
-      </div>
-
-      {/* Navigation Links */}
-      <nav className="flex-1 p-2 space-y-0.5 overflow-y-auto">
-        {navItems.map((item) => {
-          const isActive = activeTab === item.id;
-          const Icon = item.icon;
-          return (
-            <button
-              key={item.id}
-              onClick={() => handleNavClick(item.id)}
-              className={`w-full flex items-center justify-between px-3 py-2 rounded-md text-xs font-medium transition-colors cursor-pointer text-left ${
-                isActive
-                  ? 'bg-[#006A4E]/10 dark:bg-emerald-950/60 text-[#006A4E] dark:text-emerald-300 font-bold border-l-3 border-[#006A4E] dark:border-emerald-400'
-                  : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/80 hover:text-slate-900 dark:hover:text-slate-200'
-              }`}
-            >
-              <div className="flex items-center gap-2.5 truncate">
-                <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-[#006A4E] dark:text-emerald-400' : 'text-slate-500 dark:text-slate-400'}`} />
-                <span className="truncate">{item.labelBn}</span>
-              </div>
-              {item.badge !== undefined && (
-                <span
-                  className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full shrink-0 ${item.badgeColor || 'bg-slate-100 text-slate-700'}`}
-                >
-                  {item.badge}
-                </span>
-              )}
-            </button>
-          );
-        })}
-      </nav>
-
-      {/* Role Profile Box at Bottom */}
-      <div className="p-3 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-[#0F1724]">
-        <div className="flex items-center gap-2 text-left">
-          <div className="w-7 h-7 rounded-full bg-[#006A4E]/20 text-[#006A4E] dark:text-emerald-300 flex items-center justify-center font-bold text-xs shrink-0">
-            {roleConfig.nameBn.charAt(0)}
-          </div>
-          <div className="min-w-0">
-            <span className="text-[11px] font-bold text-slate-900 dark:text-white block truncate">
-              {roleConfig.nameBn}
-            </span>
-            <span className="text-[10px] text-slate-500 dark:text-slate-400 block truncate">
-              {roleConfig.designationBn}
-            </span>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+  const navItems = getNavItemsForRole();
 
   return (
     <>
-      {/* Desktop Sidebar (Persistent) */}
-      <aside className="hidden lg:block shrink-0 h-[calc(100vh-80px)] sticky top-[80px]">
-        {sidebarContent}
-      </aside>
-
-      {/* Mobile Drawer */}
+      {/* Mobile Drawer Overlay */}
       {isMobileOpen && (
-        <div className="fixed inset-0 z-40 lg:hidden flex">
-          <div
-            className="fixed inset-0 bg-black/50 backdrop-blur-xs transition-opacity"
-            onClick={onCloseMobile}
-          />
-          <div className="relative flex-1 flex flex-col max-w-xs w-full bg-white dark:bg-[#15202E] shadow-xl z-50">
-            <div className="flex items-center justify-between p-3 border-b border-slate-200 dark:border-slate-800">
-              <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
-                মেনু নেভিগেশন
+        <div
+          onClick={onCloseMobile}
+          className="fixed inset-0 z-40 bg-black/60 lg:hidden backdrop-blur-xs"
+        />
+      )}
+
+      {/* Sidebar Container */}
+      <aside
+        className={`fixed lg:sticky top-0 lg:top-[69px] left-0 z-40 w-64 sm:w-72 h-screen lg:h-[calc(100vh-69px)] bg-white dark:bg-[#15202E] border-r border-slate-200 dark:border-slate-800 flex flex-col justify-between p-3 sm:p-4 transition-transform duration-200 ease-in-out ${
+          isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+        }`}
+      >
+        <div className="space-y-4">
+          {/* Mobile Header with Close Button */}
+          <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800 lg:hidden">
+            <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
+              মেনু ও নেভিগেশন
+            </span>
+            <button
+              onClick={onCloseMobile}
+              className="p-1 rounded-md text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+
+          {/* User Role Card */}
+          <div className="p-3 rounded-md bg-slate-50 dark:bg-slate-850 border border-slate-200 dark:border-slate-700/60 text-xs">
+            <div className="flex items-center justify-between text-[11px] font-semibold text-slate-500 dark:text-slate-400 mb-1">
+              <span>সক্রিয় ভূমিকা:</span>
+              <span className="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold">
+                {roleConfig.nameBn}
               </span>
-              <button
-                onClick={onCloseMobile}
-                className="p-1 rounded-md text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
             </div>
-            {sidebarContent}
+            <p className="text-[11px] text-slate-600 dark:text-slate-400 leading-tight">
+              {roleConfig.descriptionBn}
+            </p>
+          </div>
+
+          {/* Quick Action: New Application (Available for Citizen & DLAO) */}
+          {(currentRole === 'CITIZEN' || currentRole === 'LEGAL_AID_OFFICER') && (
+            <button
+              onClick={() => {
+                onOpenNewApplicationModal();
+                if (isMobileOpen) onCloseMobile();
+              }}
+              className="w-full flex items-center justify-center gap-2 py-2.5 px-3 bg-[#006A4E] hover:bg-[#004D3A] text-white rounded-md text-xs sm:text-sm font-semibold transition-colors shadow-2xs cursor-pointer"
+            >
+              <PlusCircle className="w-4 h-4" />
+              <span>নতুন আইনি আবেদন</span>
+            </button>
+          )}
+
+          {/* Role-Tailored Navigation Links */}
+          <nav className="space-y-1">
+            {navItems.map(item => {
+              const Icon = item.icon;
+              const isActive = activeTab === item.id;
+
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => {
+                    onSelectTab(item.id);
+                    if (isMobileOpen) onCloseMobile();
+                  }}
+                  className={`w-full flex items-center justify-between px-3 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors cursor-pointer text-left ${
+                    isActive
+                      ? 'bg-[#006A4E] text-white shadow-2xs font-semibold'
+                      : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/60'
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5">
+                    <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-slate-500 dark:text-slate-400'}`} />
+                    <span>{item.labelBn}</span>
+                  </div>
+
+                  {item.badge !== undefined && (
+                    <span
+                      className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
+                        isActive
+                          ? 'bg-white/20 text-white'
+                          : item.badgeColor || 'bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-200'
+                      }`}
+                    >
+                      {item.badge}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </nav>
+        </div>
+
+        {/* Footer: Legal Aid Hotline & Pilot Info */}
+        <div className="pt-3 border-t border-slate-200 dark:border-slate-800 text-[11px] text-slate-500 dark:text-slate-400 space-y-1">
+          <div className="flex items-center justify-between">
+            <span>পাইলট জেলা:</span>
+            <span className="font-semibold text-slate-800 dark:text-slate-200">৮টি জেলা</span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span>সিস্টেম রেফারেন্স:</span>
+            <span className="font-mono font-semibold text-slate-800 dark:text-slate-200">১০ সেপ্টে ২০২৬</span>
           </div>
         </div>
-      )}
+      </aside>
     </>
   );
 };
